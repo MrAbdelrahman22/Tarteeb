@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ترتيب | دفتر المعلم الرقمي</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     MOBILE SIDEBAR OVERLAY
+     ═══════════════════════════════════════════════ -->
+<div id="mobile-overlay" onclick="toggleSidebar()"></div>
+
+<!-- ═══════════════════════════════════════════════
+     TOAST NOTIFICATIONS CONTAINER
+     ═══════════════════════════════════════════════ -->
+<div id="toast-container" aria-live="polite"></div>
+
+<!-- ═══════════════════════════════════════════════
+     LOADING OVERLAY
+     ═══════════════════════════════════════════════ -->
+<div id="loading-overlay" class="hidden">
+  <div class="loader-inner">
+    <div class="loader-ring"></div>
+    <span>جارٍ الحفظ…</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MODAL OVERLAY
+     ═══════════════════════════════════════════════ -->
+<div id="modal-overlay" class="hidden" onclick="closeModal(event)">
+  <div id="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close-btn" onclick="closeModal()">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SPLASH SCREEN — ترتيب
+     ═══════════════════════════════════════════════ -->
+<div id="splash-screen">
+  <!-- Animated grid background -->
+  <div class="splash-grid-bg">
+    <div class="splash-grid-lines"></div>
+  </div>
+
+  <div class="splash-content">
+    <!-- Logo: 3×3 grid dots that animate in -->
+    <div class="splash-logo">
+      <div class="splash-grid-dots">
+        <span></span><span></span><span></span>
+        <span></span><span class="center"></span><span></span>
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <div class="splash-name">ترتيب</div>
+    <div class="splash-tagline">دفتر المعلم الرقمي</div>
+
+    <!-- Progress bar instead of dots -->
+    <div class="splash-progress-wrap">
+      <div class="splash-progress-bar"></div>
+    </div>
+  </div>
+
+  <div class="splash-footer">
+    <span class="splash-footer-badge">مشروع تخرج</span>
+    <span>·</span>
+    <span>الإصدار 1.0.0</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     APP SHELL
+     ═══════════════════════════════════════════════ -->
+<div id="app-shell">
+
+  <!-- ──── SIDEBAR ──── -->
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-mark-wrap">
+        <div class="logo-grid-icon">
+          <span></span><span></span><span></span>
+          <span></span><span></span><span></span>
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="logo-text">
+        <span class="logo-main">ترتيب</span>
+        <span class="logo-sub">دفتر المعلم الرقمي</span>
+      </div>
+      <button id="sidebar-toggle" title="طي القائمة" onclick="toggleSidebar()">⇤</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">الرئيسية</div>
+      <a class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
+        <span class="nav-icon">🏠</span><span class="nav-label">لوحة التحكم</span>
+      </a>
+
+      <div class="nav-section-label">التخطيط</div>
+      <a class="nav-item" data-page="schedule" onclick="navigate('schedule')">
+        <span class="nav-icon">📅</span><span class="nav-label">جدول الحصص</span>
+      </a>
+      <a class="nav-item" data-page="curriculum" onclick="navigate('curriculum')">
+        <span class="nav-icon">📐</span><span class="nav-label">توزيع المنهج</span>
+      </a>
+
+      <div class="nav-section-label">الدروس</div>
+      <a class="nav-item" data-page="lesson-form" onclick="navigate('lesson-form')">
+        <span class="nav-icon">✍️</span><span class="nav-label">تحضير درس جديد</span>
+      </a>
+      <a class="nav-item" data-page="archive" onclick="navigate('archive')">
+        <span class="nav-icon">🗂️</span><span class="nav-label">أرشيف الدروس</span>
+      </a>
+
+      <div class="nav-section-label">الطلاب</div>
+      <a class="nav-item" data-page="classes" onclick="navigate('classes')">
+        <span class="nav-icon">🏫</span><span class="nav-label">إدارة الفصول</span>
+      </a>
+      <a class="nav-item" data-page="students" onclick="navigate('students')">
+        <span class="nav-icon">👥</span><span class="nav-label">إدارة الطلاب</span>
+      </a>
+      <a class="nav-item" data-page="attendance" onclick="navigate('attendance')">
+        <span class="nav-icon">✅</span><span class="nav-label">الحضور والغياب</span>
+      </a>
+      <a class="nav-item" data-page="behavior" onclick="navigate('behavior')">
+        <span class="nav-icon">📋</span><span class="nav-label">السلوك والانضباط</span>
+      </a>
+
+      <div class="nav-section-label">الموارد</div>
+      <a class="nav-item" data-page="resources" onclick="navigate('resources')">
+        <span class="nav-icon">🔗</span><span class="nav-label">الموارد التعليمية</span>
+      </a>
+      <a class="nav-item" data-page="reports" onclick="navigate('reports')">
+        <span class="nav-icon">📊</span><span class="nav-label">التقارير</span>
+      </a>
+      <a class="nav-item" data-page="tools" onclick="navigate('tools')">
+        <span class="nav-icon">🛠️</span><span class="nav-label">الأدوات التعليمية</span>
+      </a>
+      <a class="nav-item" data-page="notes" onclick="navigate('notes')">
+        <span class="nav-icon">📝</span><span class="nav-label">مذكراتي</span>
+      </a>
+
+      <div class="nav-section-label">النظام</div>
+      <a class="nav-item" data-page="settings" onclick="navigate('settings')">
+        <span class="nav-icon">⚙️</span><span class="nav-label">الإعدادات</span>
+      </a>
+      <a class="nav-item" data-page="about" onclick="navigate('about')">
+        <span class="nav-icon">ℹ️</span><span class="nav-label">حول المشروع</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button id="dark-mode-btn" onclick="toggleDarkMode()" title="وضع الليل">
+        <span id="dark-icon">🌙</span>
+      </button>
+      <span class="version-tag">v1.0.0</span>
+    </div>
+  </aside>
+
+  <!-- ──── MAIN CONTENT ──── -->
+  <main id="main-content">
+    <!-- Top Header Bar -->
+    <header id="top-bar">
+      <div class="top-bar-right">
+        <button class="hamburger-btn" onclick="toggleSidebar()">☰</button>
+        <button id="back-btn" class="back-btn hidden" onclick="navigateBack()" title="رجوع (Alt+←)">
+          <span class="back-arrow">←</span>
+          <span class="back-label">رجوع</span>
+        </button>
+        <h1 id="page-title">لوحة التحكم</h1>
+      </div>
+      <div class="top-bar-left">
+        <div class="global-search-wrapper">
+          <button class="global-search-btn" onclick="openGlobalSearch()" title="بحث شامل (Ctrl+K)">🔍</button>
+        </div>
+        <button id="dark-mode-btn-top" onclick="toggleDarkMode()" title="تبديل الوضع">
+          <i class="mode-icon">🌙</i>
+        </button>
+        <div id="notification-bell" class="notif-bell" onclick="toggleNotifications()">
+          🔔 <span id="notif-count" class="notif-badge hidden">0</span>
+        </div>
+        <div id="notif-dropdown" class="notif-dropdown hidden">
+          <div class="notif-header">
+            <span>الإشعارات</span>
+            <button class="btn-link" onclick="clearAllNotifications()" style="font-size:0.75rem;background:none;border:none;color:var(--accent-blue);cursor:pointer">مسح الكل</button>
+          </div>
+          <div id="notif-list"></div>
+        </div>
+        <div class="current-date" id="current-date"></div>
+      </div>
+    </header>
+
+    <!-- ════════════════════════════════════════
+         PAGE: DASHBOARD
+         ════════════════════════════════════════ -->
+    <section id="page-dashboard" class="page active">
+
+      <!-- Greeting Banner -->
+      <div class="greeting-banner" id="greeting-banner">
+        <div>
+          <div class="greeting-brand">
+            <div class="greeting-brand-dots">
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+            </div>
+            <span>ترتيب</span>
+          </div>
+          <div class="greeting-text">
+            <span id="greeting-msg">مرحباً</span>
+            <span id="greeting-name" style="font-weight:800"> يا معلم!</span>
+          </div>
+          <div id="greeting-school" class="greeting-school"></div>
+        </div>
+        <div class="greeting-logo-bg">ترتيب</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card accent-blue">
+          <div class="stat-icon">🏫</div>
+          <div class="stat-info">
+            <span class="stat-label">الفصول الدراسية</span>
+            <span class="stat-value" id="stat-classes">0</span>
+          </div>
+        </div>
+        <div class="stat-card accent-green">
+          <div class="stat-icon">👥</div>
+          <div class="stat-info">
+            <span class="stat-label">إجمالي الطلاب</span>
+            <span class="stat-value" id="stat-students">0</span>
+          </div>
+        </div>
+        <div class="stat-card accent-purple">
+          <div class="stat-icon">📝</div>
+          <div class="stat-info">
+            <span class="stat-label">الدروس المحضّرة</span>
+            <span class="stat-value" id="stat-lessons">0</span>
+          </div>
+        </div>
+        <div class="stat-card accent-orange">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-info">
+            <span class="stat-label">متوسط الأداء</span>
+            <span class="stat-value" id="stat-avg">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="card chart-card">
+          <div class="card-header">
+            <h3>أداء الطلاب حسب الفصل</h3>
+            <span class="card-badge">Chart.js</span>
+          </div>
+          <div class="chart-wrapper">
+            <div id="performance-chart"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>آخر الدروس المضافة</h3>
+            <button class="btn-link" onclick="navigate('archive')">عرض الكل ←</button>
+          </div>
+          <div id="recent-lessons-list" class="recent-list"></div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h3>نسبة إنجاز المنهج</h3>
+          </div>
+          <div id="curriculum-progress-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3>الحصص القادمة اليوم</h3>
+          </div>
+          <div id="today-schedule-list" class="recent-list"></div>
+        </div>
+      </div>
+
+      <!-- أدوات سريعة جديدة -->
+      <div class="card" style="margin-top: 20px;">
+        <div class="card-header">
+          <h3>⚡ أدوات سريعة</h3>
+          <span class="card-badge">إجراءات</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+          <button class="btn btn-outline btn-sm" onclick="navigate('lesson-form')">
+            ✍️ تحضير درس سريع
+          </button>
+          <button class="btn btn-outline btn-sm" onclick="openAddBehaviorModal()">
+            📋 تسجيل سلوك
+          </button>
+          <button class="btn btn-outline btn-sm" onclick="openAddStudentModal()">
+            👤 إضافة طالب
+          </button>
+          <button class="btn btn-outline btn-sm" onclick="showAdvancedStats()">
+            📊 إحصائيات متقدمة
+          </button>
+          <button class="btn btn-outline btn-sm" onclick="backupData()">
+            💾 نسخ احتياطي
+          </button>
+          <label class="btn btn-outline btn-sm" style="cursor: pointer;">
+            📂 استعادة بيانات
+            <input type="file" accept=".json" style="display: none;" onchange="restoreData(event)">
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         PAGE: SCHEDULE
+         ════════════════════════════════════════ -->
+    <section id="page-schedule" class="page">
+      <div class="page-actions">
+        <button class="btn btn-primary" onclick="openAddScheduleModal()">+ إضافة حصة</button>
+      </div>
+      <div class="card">
+        <div class="schedule-grid-wrapper">
+          <table class="schedule-table" id="schedule-table">
+            <thead>
+              <tr>
+                <th>الحصة \ اليوم</th>
+                <th>الأحد</th><th>الاثنين</th><th>الثلاثاء</th><th>الأربعاء</th><th>الخميس</th>
+              </tr>
+            </thead>
+            <tbody id="schedule-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         PAGE: CURRICULUM
+         ════════════════════════════════════════ -->
+    <section id="page-curriculum" class="page">
+      <div class="page-actions">
+        <button class="btn btn-primary" onclick="openAddCurriculumModal()">+ إضافة وحدة</button>
+        <select id="curriculum-class-filter" class="form-select" onchange="renderCurriculum()">
+          <option value="">كل الفصول</option>
+        </select>
+      </div>
+      <div id="curriculum-list" class="curriculum-container"></div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         PAGE: LESSON FORM
+         ════════════════════════════════════════ -->
+    <section id="page-lesson-form" class="page">
+      <div class="card form-card">
+        <div class="card-header">
+          <h3 id="lesson-form-title">تحضير درس جديد</h3>
+          <button class="btn btn-ghost" onclick="resetLessonForm()">مسح النموذج</button>
+        </div>
+        <form id="lesson-form" onsubmit="saveLesson(event)">
+          <input type="hidden" id="lesson-edit-id" value="" />
+
+          <!-- Row 1 -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>المادة الدراسية *</label>
+              <input type="text" id="lesson-subject" class="form-input" placeholder="مثال: الرياضيات" required />
+            </div>
+            <div class="form-group">
+              <label>الصف *</label>
+              <input type="text" id="lesson-grade" class="form-input" placeholder="مثال: الثالث الابتدائي" required />
+            </div>
+            <div class="form-group">
+              <label>الفصل</label>
+              <select id="lesson-class" class="form-select" onchange="autoFillGradeFromClass()">
+                <option value="">اختر الفصل</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>التاريخ *</label>
+              <input type="date" id="lesson-date" class="form-input" required />
+            </div>
+          </div>
+
+          <!-- Row 2 -->
+          <div class="form-group full-width">
+            <label>عنوان الدرس *</label>
+            <input type="text" id="lesson-title" class="form-input" placeholder="أدخل عنوان الدرس" required />
+          </div>
+
+          <!-- Bloom's Taxonomy -->
+          <div class="form-group full-width">
+            <label>أهداف الدرس</label>
+            <textarea id="lesson-objectives" class="form-textarea" rows="3" placeholder="اكتب أهداف الدرس…"></textarea>
+          </div>
+          <div class="form-group full-width">
+            <label>تصنيف بلوم للهدف</label>
+            <div class="bloom-grid">
+              <label class="bloom-item bloom-remember"><input type="checkbox" name="bloom" value="remember" /><span>التذكر</span></label>
+              <label class="bloom-item bloom-understand"><input type="checkbox" name="bloom" value="understand" /><span>الفهم</span></label>
+              <label class="bloom-item bloom-apply"><input type="checkbox" name="bloom" value="apply" /><span>التطبيق</span></label>
+              <label class="bloom-item bloom-analyze"><input type="checkbox" name="bloom" value="analyze" /><span>التحليل</span></label>
+              <label class="bloom-item bloom-evaluate"><input type="checkbox" name="bloom" value="evaluate" /><span>التقييم</span></label>
+              <label class="bloom-item bloom-create"><input type="checkbox" name="bloom" value="create" /><span>الإبداع</span></label>
+            </div>
+          </div>
+
+          <!-- Content Rows -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>شرح الدرس</label>
+              <textarea id="lesson-explanation" class="form-textarea" rows="4" placeholder="شرح تفصيلي للدرس…"></textarea>
+            </div>
+            <div class="form-group">
+              <label>عناصر / محتوى الدرس</label>
+              <textarea id="lesson-elements" class="form-textarea" rows="4" placeholder="العناصر الرئيسية للدرس…"></textarea>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>استراتيجيات التدريس</label>
+              <textarea id="lesson-strategies" class="form-textarea" rows="3" placeholder="مثال: التعلم التعاوني، العصف الذهني…"></textarea>
+            </div>
+            <div class="form-group">
+              <label>الوسائل التعليمية</label>
+              <textarea id="lesson-tools" class="form-textarea" rows="3" placeholder="مثال: السبورة، جهاز العرض، النماذج…"></textarea>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>الأنشطة</label>
+              <textarea id="lesson-activities" class="form-textarea" rows="3" placeholder="الأنشطة الصفية والتفاعلية…"></textarea>
+            </div>
+            <div class="form-group">
+              <label>التقويم</label>
+              <textarea id="lesson-assessment" class="form-textarea" rows="3" placeholder="أساليب التقييم والقياس…"></textarea>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>الواجب المنزلي</label>
+              <textarea id="lesson-homework" class="form-textarea" rows="2" placeholder="تفاصيل الواجب المنزلي…"></textarea>
+            </div>
+            <div class="form-group">
+              <label>غلق الدرس</label>
+              <textarea id="lesson-closure" class="form-textarea" rows="2" placeholder="كيفية إنهاء الدرس وتلخيصه…"></textarea>
+            </div>
+          </div>
+
+          <!-- Time Allocation -->
+          <div class="card inner-card">
+            <div class="card-header"><h4>⏱️ الزمن المخصص لكل نشاط (بالدقائق)</h4></div>
+            <div class="form-row">
+              <div class="form-group"><label>المقدمة</label><input type="number" id="time-intro" class="form-input" placeholder="5" min="0" /></div>
+              <div class="form-group"><label>الشرح</label><input type="number" id="time-explain" class="form-input" placeholder="15" min="0" /></div>
+              <div class="form-group"><label>الأنشطة</label><input type="number" id="time-activities" class="form-input" placeholder="15" min="0" /></div>
+              <div class="form-group"><label>التقويم</label><input type="number" id="time-assessment" class="form-input" placeholder="5" min="0" /></div>
+              <div class="form-group"><label>الإغلاق</label><input type="number" id="time-closure" class="form-input" placeholder="5" min="0" /></div>
+            </div>
+            <div class="time-total">إجمالي الزمن: <span id="time-total-display">0</span> دقيقة</div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg">💾 حفظ الدرس</button>
+            <button type="button" class="btn btn-ghost" onclick="resetLessonForm()">إلغاء</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         PAGE: ARCHIVE (مع بحث متقدم)
+         ════════════════════════════════════════ -->
+    <section id="page-archive" class="page">
+      <div class="page-actions">
+        <div class="search-box" style="flex: 1;">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="archive-search" class="form-input search-input" placeholder="بحث في الدروس…" oninput="renderArchive()" />
+        </div>
+        <select id="archive-subject-filter" class="form-select" onchange="renderArchive()">
+          <option value="">كل المواد</option>
+        </select>
+        <select id="archive-month-filter" class="form-select" onchange="renderArchive()">
+          <option value="">كل الشهور</option>
+          <option value="01">يناير</option>
+          <option value="02">فبراير</option>
+          <option value="03">مارس</option>
+          <option value="04">أبريل</option>
+          <option value="05">مايو</option>
+          <option value="06">يونيو</option>
+          <option value="07">يوليو</option>
+          <option value="08">أغسطس</option>
+          <option value="09">سبتمبر</option>
+          <option value="10">أكتوبر</option>
+          <option value="11">نوفمبر</option>
+          <option value="12">ديسمبر</option>
+        </select>
+        <button class="btn btn-ghost" onclick="exportAllLessons()" title="تصدير جميع الدروس">
+          📥 تصدير الكل
+        </button>
+      </div>
+      <div class="card">
+        <div class="data-table-wrapper">
+        <table class="data-table" id="archive-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>عنوان الدرس</th>
+              <th>المادة</th>
+              <th>الصف</th>
+              <th>الفصل</th>
+              <th>التاريخ</th>
+              <th>تصنيف بلوم</th>
+              <th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="archive-tbody"></tbody>
+        </table>
+        <div id="archive-empty" class="empty-state hidden">
+          <span>📂</span>
+          <p>لا توجد دروس محفوظة بعد</p>
+          <button class="btn btn-primary" onclick="navigate('lesson-form')">إضافة درس جديد</button>
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         PAGE: CLASSES
+         ════════════════════════════════════════ -->
+    <section id="page-classes" class="page">
+      <div class="page-actions">
+        <div class="search-box" style="flex:1">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="class-search" class="form-input search-input" placeholder="بحث في الفصول…" oninput="renderClasses()" />
+        </div>
+        <button class="btn btn-primary" onclick="openAddClassModal()">+ إضافة فصل</button>
+      </div>
+      <div id="classes-grid" class="cards-grid"></div>
+      <div id="classes-empty" class="empty-state hidden">
+        <span>🏫</span><p>لا توجد فصول مضافة</p>
+        <button class="btn btn-primary" onclick="openAddClassModal()">إضافة أول فصل</button>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         PAGE: STUDENTS
+         ════════════════════════════════════════ -->
+    <section id="page-students" class="page">
+      <div class="page-actions">
+        <div class="search-box" style="flex:1">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="student-search" class="form-input search-input" placeholder="بحث باسم الطالب…" oninput="renderStudents()" />
+        </div>
+        <select id="student-class-filter" class="form-select" onchange="renderStudents()">
+          <option value="">كل الفصول</option>
+        </select>
+        <button class="btn btn-primary" onclick="openAddStudentModal()">+ إضافة طالب</button>
+      </div>
+      <div class="card">
+        <div class="data-table-wrapper">
+        <table class="data-table" id="students-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>اسم الطالب</th>
+              <th>الفصل</th>
+              <th>الدرجة (100)</th>
+              <th>المتوسط</th>
+              <th>السلوك</th>
+              <th>ملاحظات</th>
+              <th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="students-tbody"></tbody>
+        </table>
+        <div id="students-empty" class="empty-state hidden">
+          <span>👥</span><p>لا يوجد طلاب مسجلون</p>
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         PAGE: BEHAVIOR
+         ════════════════════════════════════════ -->
+    <section id="page-behavior" class="page">
+      <div class="page-actions">
+        <div class="search-box" style="flex:1">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="behavior-search" class="form-input search-input" placeholder="بحث باسم الطالب أو الملاحظة…" oninput="renderBehavior()" />
+        </div>
+        <select id="behavior-class-filter" class="form-select" onchange="renderBehavior()">
+          <option value="">كل الفصول</option>
+        </select>
+        <select id="behavior-type-filter" class="form-select" onchange="renderBehavior()">
+          <option value="">كل الأنواع</option>
+          <option value="positive">إيجابي</option>
+          <option value="negative">سلبي</option>
+          <option value="neutral">محايد</option>
+        </select>
+        <button class="btn btn-primary" onclick="openAddBehaviorModal()">+ تسجيل ملاحظة</button>
+      </div>
+      <div id="behavior-list" class="behavior-container"></div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         PAGE: RESOURCES
+         ════════════════════════════════════════ -->
+    <section id="page-resources" class="page">
+      <div class="page-actions">
+        <div class="search-box" style="flex:1">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="resource-search" class="form-input search-input" placeholder="بحث في الموارد…" oninput="renderResources()" />
+        </div>
+        <select id="resource-type-filter" class="form-select" onchange="renderResources()">
+          <option value="">كل الأنواع</option>
+          <option value="link">روابط</option>
+          <option value="file">ملفات</option>
+          <option value="video">فيديوهات</option>
+          <option value="book">كتب</option>
+          <option value="other">أخرى</option>
+        </select>
+        <button class="btn btn-primary" onclick="openAddResourceModal()">+ إضافة مورد</button>
+      </div>
+      <div id="resources-grid" class="cards-grid resources-grid"></div>
+      <div id="resources-empty" class="empty-state hidden">
+        <span>🔗</span><p>لا توجد موارد مضافة</p>
+        <button class="btn btn-primary" onclick="openAddResourceModal()">إضافة أول مورد</button>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         PAGE: REPORTS (مع إحصائيات متقدمة)
+         ════════════════════════════════════════ -->
+    <section id="page-reports" class="page">
+      <div class="reports-container">
+        <div class="card report-card" onclick="generateStudentReport()">
+          <div class="report-icon">👤</div>
+          <div class="report-info">
+            <h3>تقرير طالب</h3>
+            <p>عرض وتصدير تقرير مفصل لطالب محدد</p>
+          </div>
+          <button class="btn btn-outline btn-sm" style="width:100%">إنشاء التقرير</button>
+        </div>
+        <div class="card report-card" onclick="generateClassReport()">
+          <div class="report-icon">🏫</div>
+          <div class="report-info">
+            <h3>تقرير فصل</h3>
+            <p>عرض إحصائيات وأداء فصل دراسي كامل</p>
+          </div>
+          <button class="btn btn-outline btn-sm" style="width:100%">إنشاء التقرير</button>
+        </div>
+        <div class="card report-card" onclick="generateCurriculumReport()">
+          <div class="report-icon">📐</div>
+          <div class="report-info">
+            <h3>تقرير المنهج</h3>
+            <p>نسبة إنجاز المنهج الدراسي</p>
+          </div>
+          <button class="btn btn-outline btn-sm" style="width:100%">إنشاء التقرير</button>
+        </div>
+        <div class="card report-card" onclick="generateFullReport()">
+          <div class="report-icon">📊</div>
+          <div class="report-info">
+            <h3>التقرير الشامل</h3>
+            <p>تقرير كامل لجميع البيانات</p>
+          </div>
+          <button class="btn btn-outline btn-sm" style="width:100%">تصدير PDF</button>
+        </div>
+      </div>
+      <div id="report-output" class="report-output-area hidden">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('report-output').classList.add('hidden')">✕ إغلاق التقرير</button>
+        </div>
+        <div id="report-output-content"></div>
+      </div>
+
+      <!-- إحصائيات متقدمة -->
+      <div class="card" style="margin-top: 20px;">
+        <div class="card-header">
+          <h3>📊 إحصائيات وتحليلات متقدمة</h3>
+          <button class="btn btn-primary" onclick="showAdvancedStats()">
+            عرض الإحصائيات
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         PAGE: SETTINGS
+         ════════════════════════════════════════ -->
+    <section id="page-settings" class="page">
+      <div class="settings-container">
+
+        <!-- بيانات المعلم -->
+        <div class="card settings-card">
+          <div class="card-header">
+            <h3>👤 بيانات المعلم</h3>
+            <span class="card-badge">ملف شخصي</span>
+          </div>
+          <div class="settings-avatar" id="settings-avatar">م</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>اسم المعلم</label>
+              <input type="text" id="s-teacher-name" class="form-input" placeholder="أدخل اسمك الكامل" />
+            </div>
+            <div class="form-group">
+              <label>المادة الدراسية</label>
+              <input type="text" id="s-teacher-subject" class="form-input" placeholder="مثال: الرياضيات" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>اسم المدرسة</label>
+              <input type="text" id="s-school-name" class="form-input" placeholder="اسم المدرسة" />
+            </div>
+            <div class="form-group">
+              <label>العام الدراسي</label>
+              <input type="text" id="s-school-year" class="form-input" placeholder="مثال: 1446 / 1447 هـ" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="saveSettings()">💾 حفظ البيانات</button>
+          </div>
+        </div>
+
+        <!-- المظهر والواجهة -->
+        <div class="card settings-card">
+          <div class="card-header">
+            <h3>🎨 المظهر والواجهة</h3>
+          </div>
+          <div class="settings-options-grid">
+            <div class="settings-option" onclick="setTheme('light')">
+              <div class="settings-option-icon" style="background:#f3f4f6">☀️</div>
+              <span>الوضع النهاري</span>
+              <span id="theme-light-check" class="settings-check">✓</span>
+            </div>
+            <div class="settings-option" onclick="setTheme('dark')">
+              <div class="settings-option-icon" style="background:#111827">🌙</div>
+              <span>الوضع الليلي</span>
+              <span id="theme-dark-check" class="settings-check hidden">✓</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- البيانات والنسخ الاحتياطي -->
+        <div class="card settings-card">
+          <div class="card-header">
+            <h3>💾 البيانات والنسخ الاحتياطي</h3>
+          </div>
+          <div class="settings-actions-list">
+            <div class="settings-action-item">
+              <div>
+                <div class="settings-action-title">تصدير نسخة احتياطية</div>
+                <div class="settings-action-desc">حفظ جميع بياناتك كملف JSON</div>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="backupData()">📥 تصدير</button>
+            </div>
+            <div class="settings-action-item">
+              <div>
+                <div class="settings-action-title">استعادة نسخة احتياطية</div>
+                <div class="settings-action-desc">استيراد بيانات من ملف JSON سابق</div>
+              </div>
+              <label class="btn btn-outline btn-sm" style="cursor:pointer">
+                📂 استعادة
+                <input type="file" accept=".json" style="display:none" onchange="restoreData(event)">
+              </label>
+            </div>
+            <div class="settings-action-item danger-action">
+              <div>
+                <div class="settings-action-title" style="color:var(--accent-red)">حذف جميع البيانات</div>
+                <div class="settings-action-desc">تحذير: لا يمكن التراجع عن هذه العملية</div>
+              </div>
+              <button class="btn btn-danger btn-sm" onclick="confirmClearAllData()">🗑️ حذف الكل</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- اختصارات لوحة المفاتيح -->
+        <div class="card settings-card">
+          <div class="card-header">
+            <h3>⌨️ اختصارات لوحة المفاتيح</h3>
+          </div>
+          <div class="shortcuts-grid">
+            <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>K</kbd><span>بحث شامل</span></div>
+            <div class="shortcut-item"><kbd>Alt</kbd>+<kbd>←</kbd><span>رجوع للصفحة السابقة</span></div>
+            <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>N</kbd><span>درس جديد</span></div>
+            <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>S</kbd><span>حفظ (في نماذج الدرس)</span></div>
+            <div class="shortcut-item"><kbd>ESC</kbd><span>إغلاق النافذة / البحث</span></div>
+            <div class="shortcut-item"><kbd>Ctrl</kbd>+<kbd>D</kbd><span>لوحة التحكم</span></div>
+          </div>
+        </div>
+
+        <!-- إحصائيات الاستخدام -->
+        <div class="card settings-card">
+          <div class="card-header">
+            <h3>📊 إحصائيات الاستخدام</h3>
+          </div>
+          <div id="usage-stats-list"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         PAGE: ABOUT
+         ════════════════════════════════════════ -->
+    <section id="page-about" class="page">
+      <div class="about-container">
+        <div class="about-hero">
+          <!-- Decorative grid pattern -->
+          <div class="about-hero-grid"></div>
+
+          <div class="about-logo-wrap">
+            <div class="about-grid-dots">
+              <span></span><span></span><span></span>
+              <span></span><span class="center"></span><span></span>
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+
+          <h2>ترتيب</h2>
+          <p class="about-tagline">دفتر المعلم الرقمي</p>
+          <p class="about-sub-tagline">منصة متكاملة لتنظيم العمل التعليمي وتمكين المعلم</p>
+          <div class="about-badges">
+            <span class="about-badge">🎓 مشروع تخرج</span>
+            <span class="about-badge">✦ الإصدار 1.0.0</span>
+            <span class="about-badge">2026</span>
+          </div>
+        </div>
+
+        <div class="about-grid">
+          <div class="card about-card">
+            <div class="about-card-icon">🎯</div>
+            <h3>المشكلة التي نحلها</h3>
+            <p>يعاني كثير من المعلمين من غياب أدوات رقمية متكاملة باللغة العربية تجمع بين تحضير الدروس وإدارة الطلاب والتقارير في مكان واحد. تُهدر ساعات ثمينة في العمل الورقي التقليدي بدلاً من التركيز على التدريس الفعلي.</p>
+          </div>
+
+          <div class="card about-card">
+            <div class="about-card-icon">🌟</div>
+            <h3>رؤيتنا</h3>
+            <p>نسعى إلى تحويل العمل اليومي للمعلم من ورقي إلى رقمي بالكامل، مما يوفر له وقتًا أكبر للتركيز على جودة التدريس وتطوير مهاراته المهنية، ويمنحه رؤية تحليلية واضحة لأداء طلابه.</p>
+          </div>
+
+          <div class="card about-card">
+            <div class="about-card-icon">📈</div>
+            <h3>الأثر التعليمي</h3>
+            <p>يُساهم النظام في تحسين جودة التعليم من خلال: تخطيط منهجي قائم على بيانات، متابعة أكاديمية وسلوكية مستمرة لكل طالب، توثيق رقمي احترافي للدروس، ورسم إحصائي واضح للأداء.</p>
+          </div>
+
+          <div class="card about-card">
+            <div class="about-card-icon">🚀</div>
+            <h3>خطة التطوير المستقبلي</h3>
+            <ul class="about-list">
+              <li>🔥 الانتقال إلى Firebase لمزامنة البيانات عبر الأجهزة</li>
+              <li>📱 تطبيق موبايل Native بـ React Native</li>
+              <li>🤖 تحليل ذكاء اصطناعي لاقتراح استراتيجيات التدريس</li>
+              <li>👨‍👩‍👧‍👦 بوابة أولياء الأمور لمتابعة أداء أبنائهم</li>
+              <li>🏫 نظام المدرسة الكاملة متعدد المعلمين</li>
+              <li>📤 تصدير لصيغ متعددة: Word, Excel, PDF</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card tech-stack-card">
+          <h3>🛠️ الحزمة التقنية</h3>
+          <div class="tech-badges">
+            <span class="tech-badge">HTML5</span>
+            <span class="tech-badge">CSS3</span>
+            <span class="tech-badge">JavaScript ES6+</span>
+            <span class="tech-badge">Chart.js</span>
+            <span class="tech-badge">jsPDF</span>
+            <span class="tech-badge">localStorage API</span>
+            <span class="tech-badge">Modular Architecture</span>
+            <span class="tech-badge">RTL Support</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         PAGE: TOOLS — الأدوات التعليمية
+         ════════════════════════════════════════ -->
+    <section id="page-tools" class="page">
+      <div class="tools-grid">
+
+        <!-- ── 1. مؤقت الحصة ── -->
+        <div class="card tool-card">
+          <div class="card-header">
+            <h3>⏱️ مؤقت الحصة</h3>
+            <span class="card-badge">عداد تنازلي</span>
+          </div>
+          <div class="timer-wrapper">
+            <svg class="timer-ring-svg" viewBox="0 0 200 200">
+              <circle class="timer-ring-bg" cx="100" cy="100" r="88"/>
+              <circle id="timer-ring-fill" class="timer-ring-fill" cx="100" cy="100" r="88"/>
+            </svg>
+            <div class="timer-display">
+              <div id="timer-time" class="timer-time">45:00</div>
+              <div id="timer-label" class="timer-label">مستعد</div>
+            </div>
+          </div>
+          <div class="timer-presets">
+            <button class="preset-btn" onclick="setTimer(5)">5د</button>
+            <button class="preset-btn" onclick="setTimer(10)">10د</button>
+            <button class="preset-btn" onclick="setTimer(15)">15د</button>
+            <button class="preset-btn active" onclick="setTimer(45)">45د</button>
+            <button class="preset-btn" onclick="openCustomTimerModal()">مخصص</button>
+          </div>
+          <div class="timer-controls">
+            <button class="btn btn-primary" id="timer-start-btn" onclick="toggleTimer()">▶ ابدأ</button>
+            <button class="btn btn-ghost" onclick="resetTimer()">↺ إعادة</button>
+          </div>
+        </div>
+
+        <!-- ── 2. عجلة الاختيار العشوائي ── -->
+        <div class="card tool-card">
+          <div class="card-header">
+            <h3>🎲 اختيار طالب عشوائي</h3>
+            <span class="card-badge">عشوائي</span>
+          </div>
+          <div class="form-group" style="margin-bottom:16px">
+            <label>اختر الفصل</label>
+            <select id="picker-class-sel" class="form-select" onchange="loadPickerStudents()">
+              <option value="">اختر الفصل…</option>
+            </select>
+          </div>
+          <div id="picker-result" class="picker-result hidden">
+            <div id="picker-avatar" class="picker-avatar">؟</div>
+            <div id="picker-name" class="picker-name">—</div>
+          </div>
+          <div id="picker-empty" class="picker-empty">اختر فصلاً للبدء</div>
+          <div class="picker-controls">
+            <button class="btn btn-primary" id="picker-btn" onclick="pickRandomStudent()" disabled>🎲 اختر طالباً</button>
+            <button class="btn btn-ghost" id="picker-exclude-btn" onclick="excludePickedStudent()" style="display:none">تخطي هذا الطالب</button>
+          </div>
+          <div id="picker-remaining" class="picker-remaining"></div>
+        </div>
+
+        <!-- ── 3. حاسبة الدرجات ── -->
+        <div class="card tool-card">
+          <div class="card-header">
+            <h3>🧮 حاسبة الدرجات</h3>
+            <span class="card-badge">حساب فوري</span>
+          </div>
+          <div id="grade-calc-rows" class="grade-calc-rows">
+            <div class="grade-calc-row">
+              <input type="text"   class="form-input" placeholder="اسم التقييم" style="flex:2"/>
+              <input type="number" class="form-input" placeholder="الدرجة" min="0" max="100" style="flex:1" oninput="calcGrades()"/>
+              <input type="number" class="form-input" placeholder="الوزن%" min="0" max="100" style="flex:1" value="100" oninput="calcGrades()"/>
+              <button class="btn btn-danger btn-sm" onclick="removeGradeRow(this)">✕</button>
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="addGradeRow()" style="width:100%;margin-top:8px">+ إضافة تقييم</button>
+          <div id="grade-calc-result" class="grade-calc-result hidden">
+            <div class="gcr-score">—</div>
+            <div class="gcr-label">المعدل المرجّح</div>
+            <div id="gcr-grade-letter" class="gcr-letter">—</div>
+          </div>
+        </div>
+
+        <!-- ── 4. مولّد أسئلة التقويم ── -->
+        <div class="card tool-card">
+          <div class="card-header">
+            <h3>❓ مولّد أسئلة سريعة</h3>
+            <span class="card-badge">مساعد</span>
+          </div>
+          <div class="form-group" style="margin-bottom:12px">
+            <label>موضوع الدرس</label>
+            <input type="text" id="qgen-topic" class="form-input" placeholder="مثال: الكسور العشرية" />
+          </div>
+          <div class="form-group" style="margin-bottom:12px">
+            <label>مستوى التفكير (بلوم)</label>
+            <select id="qgen-bloom" class="form-select">
+              <option value="remember">التذكر — أسئلة المعرفة والحفظ</option>
+              <option value="understand">الفهم — أسئلة الشرح والتفسير</option>
+              <option value="apply">التطبيق — مسائل وتطبيقات</option>
+              <option value="analyze">التحليل — أسئلة تحليل وإيجاد الأسباب</option>
+              <option value="evaluate">التقييم — أسئلة الحكم والنقد</option>
+              <option value="create">الإبداع — أسئلة إبداعية ومفتوحة</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="generateQuestions()" style="width:100%;margin-bottom:12px">✨ ولّد أسئلة</button>
+          <div id="qgen-output" class="qgen-output hidden"></div>
+        </div>
+
+        <!-- ── 5. مؤقت الاسترخاء / بومودورو ── -->
+        <div class="card tool-card">
+          <div class="card-header">
+            <h3>🍅 تقنية بومودورو</h3>
+            <span class="card-badge">إنتاجية</span>
+          </div>
+          <div class="pomodoro-phases">
+            <button class="pomo-phase-btn active" id="pomo-work-btn" onclick="setPomodoro('work')">
+              <span>📚</span> تركيز (25د)
+            </button>
+            <button class="pomo-phase-btn" id="pomo-short-btn" onclick="setPomodoro('short')">
+              <span>☕</span> استراحة (5د)
+            </button>
+            <button class="pomo-phase-btn" id="pomo-long-btn" onclick="setPomodoro('long')">
+              <span>🌿</span> استراحة طويلة (15د)
+            </button>
+          </div>
+          <div id="pomo-display" class="pomo-display">25:00</div>
+          <div id="pomo-session-count" class="pomo-sessions">جلسة 1 من 4</div>
+          <div class="timer-controls" style="margin-top:16px">
+            <button class="btn btn-primary" id="pomo-start-btn" onclick="togglePomodoro()">▶ ابدأ</button>
+            <button class="btn btn-ghost" onclick="resetPomodoro()">↺ إعادة</button>
+          </div>
+        </div>
+
+        <!-- ── 6. عداد المشاركة ── -->
+        <div class="card tool-card">
+          <div class="card-header">
+            <h3>🙋 عداد المشاركة</h3>
+            <span class="card-badge">صفي</span>
+          </div>
+          <div class="form-group" style="margin-bottom:12px">
+            <label>اختر الفصل</label>
+            <select id="part-class-sel" class="form-select" onchange="loadParticipationStudents()">
+              <option value="">اختر الفصل…</option>
+            </select>
+          </div>
+          <div id="participation-list" class="participation-list"></div>
+          <div class="participation-actions">
+            <button class="btn btn-ghost btn-sm" onclick="resetParticipation()">↺ إعادة تعيين</button>
+            <button class="btn btn-outline btn-sm" onclick="exportParticipation()">📊 تصدير</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         PAGE: NOTES — مذكراتي
+         ════════════════════════════════════════ -->
+    <section id="page-notes" class="page">
+      <div class="page-actions">
+        <div class="search-box" style="flex:1">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="notes-search" class="form-input search-input" placeholder="بحث في المذكرات…" oninput="renderNotes()" />
+        </div>
+        <select id="notes-color-filter" class="form-select" style="width:auto" onchange="renderNotes()">
+          <option value="">كل الألوان</option>
+          <option value="yellow">🟡 أصفر</option>
+          <option value="blue">🔵 أزرق</option>
+          <option value="green">🟢 أخضر</option>
+          <option value="pink">🩷 وردي</option>
+          <option value="purple">🟣 بنفسجي</option>
+        </select>
+        <button class="btn btn-primary" onclick="openAddNoteModal()">+ ملاحظة جديدة</button>
+      </div>
+      <div id="notes-grid" class="notes-grid"></div>
+      <div id="notes-empty" class="empty-state hidden">
+        <span>📝</span>
+        <p>لا توجد مذكرات بعد</p>
+        <button class="btn btn-primary" onclick="openAddNoteModal()">أضف أول ملاحظة</button>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+         PAGE: ATTENDANCE
+         ════════════════════════════════════════ -->
+    <section id="page-attendance" class="page">
+      <div class="page-actions">
+        <div class="search-box" style="flex:1">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="attendance-search" class="form-input search-input" placeholder="بحث باسم الطالب…" oninput="renderAttendance()" />
+        </div>
+        <select id="attendance-class-filter" class="form-select" onchange="renderAttendance()">
+          <option value="">كل الفصول</option>
+        </select>
+        <input type="date" id="attendance-date-filter" class="form-input" style="width:auto" onchange="renderAttendance()" />
+        <button class="btn btn-primary" onclick="openTakeAttendanceModal()">📋 تسجيل الحضور</button>
+      </div>
+      <div class="attendance-summary" id="attendance-summary"></div>
+      <div id="attendance-list" class="attendance-container"></div>
+      <div id="attendance-empty" class="empty-state hidden">
+        <span>✅</span><p>لا توجد سجلات حضور</p>
+        <button class="btn btn-primary" onclick="openTakeAttendanceModal()">تسجيل الحضور الآن</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Global Search Overlay -->
+<div id="global-search-overlay" class="global-search-overlay hidden" onclick="closeGlobalSearch(event)">
+  <div class="global-search-box" onclick="event.stopPropagation()">
+    <div class="global-search-header">
+      <span class="global-search-icon">🔍</span>
+      <input type="text" id="global-search-input" class="global-search-input" 
+             placeholder="ابحث في الدروس، الطلاب، الفصول، الموارد…"
+             oninput="performGlobalSearch()" autofocus />
+      <kbd class="search-kbd" onclick="closeGlobalSearch()">ESC</kbd>
+    </div>
+    <div id="global-search-results" class="global-search-results">
+      <div class="search-hint">اكتب للبدء بالبحث…</div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating Action Button -->
+<div class="fab-container">
+  <div class="fab-menu hidden" id="fab-menu">
+    <button class="fab-item" onclick="closeFAB(); navigate('tools')">
+      <span class="fab-item-icon">⏱️</span>
+      <span class="fab-item-label">الأدوات</span>
+    </button>
+    <button class="fab-item" onclick="closeFAB(); openAddNoteModal()">
+      <span class="fab-item-icon">📝</span>
+      <span class="fab-item-label">ملاحظة سريعة</span>
+    </button>
+    <button class="fab-item" onclick="closeFAB(); navigate('lesson-form')">
+      <span class="fab-item-icon">✍️</span>
+      <span class="fab-item-label">درس جديد</span>
+    </button>
+    <button class="fab-item" onclick="closeFAB(); openAddStudentModal()">
+      <span class="fab-item-icon">👤</span>
+      <span class="fab-item-label">إضافة طالب</span>
+    </button>
+    <button class="fab-item" onclick="closeFAB(); openAddClassModal()">
+      <span class="fab-item-icon">🏫</span>
+      <span class="fab-item-label">فصل جديد</span>
+    </button>
+    <button class="fab-item" onclick="closeFAB(); openAddBehaviorModal()">
+      <span class="fab-item-icon">📋</span>
+      <span class="fab-item-label">تسجيل سلوك</span>
+    </button>
+    <button class="fab-item" onclick="closeFAB(); openTakeAttendanceModal()">
+      <span class="fab-item-icon">✅</span>
+      <span class="fab-item-label">تسجيل الحضور</span>
+    </button>
+  </div>
+  <button class="fab-main" id="fab-main" onclick="toggleFAB()" title="إجراءات سريعة">
+    <span id="fab-icon">+</span>
+  </button>
+</div>
+
+<!-- Main JS -->
+<script src="app.js"></script>
+</body>
+</html>
